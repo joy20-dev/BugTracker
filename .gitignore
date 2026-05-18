@@ -1,0 +1,16 @@
+# Backend
+bugtracker1/target/
+bugtracker1/.classpath
+bugtracker1/.project
+bugtracker1/.settings/
+bugtracker1/*.class
+
+# Frontend
+bugtracker-frontend/node_modules/
+bugtracker-frontend/dist/
+bugtracker-frontend/.env
+
+# General
+*.log
+.DS_Store
+Thumbs.db
