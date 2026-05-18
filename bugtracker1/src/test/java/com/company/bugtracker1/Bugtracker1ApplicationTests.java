@@ -1,0 +1,13 @@
+package com.company.bugtracker1;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class Bugtracker1ApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}
