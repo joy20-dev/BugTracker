@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.PutMapping;
 
 import com.company.bugtracker1.project.dto.ProjectDto;
 import com.company.bugtracker1.project.service.ProjectService;
@@ -39,5 +41,13 @@ public class ProjectController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     public ResponseEntity<ProjectDto.ProjectResponse> createProject(@Valid @RequestBody ProjectDto.CreateProjectRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(projectService.createProject(request));
+    }
+
+    @PutMapping("/{projectId}/users/{userId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    public ResponseEntity<ProjectDto.ProjectResponse> assignUserToProject(
+            @PathVariable Long projectId,
+            @PathVariable Long userId) {
+        return ResponseEntity.ok(projectService.assignUserToProject(projectId, userId));
     }
 }

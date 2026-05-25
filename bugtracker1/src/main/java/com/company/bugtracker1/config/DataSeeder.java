@@ -1,5 +1,7 @@
 package com.company.bugtracker1.config;
 
+import com.company.bugtracker1.project.entity.Project;
+import com.company.bugtracker1.project.repository.ProjectRepository;
 import com.company.bugtracker1.user.entity.Role;
 import com.company.bugtracker1.user.entity.User;
 import com.company.bugtracker1.user.repository.UserRepository;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Component;
 public class DataSeeder {
 
     private final UserRepository userRepository;
+    private final ProjectRepository projectRepository;
     private final PasswordEncoder passwordEncoder;
 
     @PostConstruct
@@ -50,5 +53,39 @@ public class DataSeeder {
                     .build());
             log.info("Engineer user created");
         }
+
+        if (!projectRepository.existsByProjectCode("BUG")) {
+            projectRepository.save(Project.builder()
+                    .projectCode("BUG")
+                    .projectName("Bug Tracker Core")
+                    .description("Core bug tracker project")
+                    .build());
+            log.info("Project BUG created");
+        }
+
+        if (!projectRepository.existsByProjectCode("WEB")) {
+            projectRepository.save(Project.builder()
+                    .projectCode("WEB")
+                    .projectName("Web UI Project")
+                    .description("Frontend bug tracking project")
+                    .build());
+            log.info("Project WEB created");
+        }
+
+        userRepository.findByEmail("manager@bugtracker.com").ifPresent(manager -> {
+            projectRepository.findByProjectCode("BUG").ifPresent(project -> {
+                project.getUsers().add(manager);
+                manager.getProjects().add(project);
+                projectRepository.save(project);
+            });
+        });
+
+        userRepository.findByEmail("engineer@bugtracker.com").ifPresent(engineer -> {
+            projectRepository.findByProjectCode("BUG").ifPresent(project -> {
+                project.getUsers().add(engineer);
+                engineer.getProjects().add(project);
+                projectRepository.save(project);
+            });
+        });
     }
 }

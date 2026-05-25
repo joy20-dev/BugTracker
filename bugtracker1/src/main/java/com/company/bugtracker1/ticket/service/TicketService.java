@@ -45,6 +45,10 @@ public class TicketService {
         Project project = projectRepository.findById(request.projectId())
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found: " + request.projectId()));
 
+        if (currentUser.getRole() != Role.ADMIN && !projectRepository.existsByIdAndUsers_Id(project.getId(), currentUser.getId())) {
+            throw new ForbiddenException("Access denied to project: " + request.projectId());
+        }
+
         String ticketId = generateTicketId(project.getProjectCode());
 
         Ticket ticket = Ticket.builder()
@@ -67,6 +71,8 @@ public class TicketService {
     public TicketDto.TicketResponse updateTicket(Long id, TicketDto.UpdateTicketRequest request) {
         Ticket ticket = getTicketEntity(id);
         checkNotClosed(ticket);
+        User currentUser = getCurrentUser();
+        checkTicketProjectAccess(ticket, currentUser);
 
         if (request.issueDescription() != null) ticket.setIssueDescription(request.issueDescription());
         if (request.supportLevel() != null) ticket.setSupportLevel(request.supportLevel());
@@ -80,21 +86,16 @@ public class TicketService {
     public TicketDto.TicketResponse getTicketById(Long id) {
         Ticket ticket = getTicketEntity(id);
         User currentUser = getCurrentUser();
-
-        if (currentUser.getRole() == Role.SUPPORT_ENGINEER) {
-            if (ticket.getAssignedTo() == null || !ticket.getAssignedTo().getId().equals(currentUser.getId())) {
-                throw new ForbiddenException("Access denied to ticket: " + id);
-            }
-        }
+        checkTicketProjectAccess(ticket, currentUser);
         return ticketMapper.toResponse(ticket);
     }
 
     @Transactional(readOnly = true)
     public Page<TicketDto.TicketResponse> getAllTickets(TicketDto.TicketFilterRequest filter, Pageable pageable) {
         User currentUser = getCurrentUser();
-        boolean isEngineer = currentUser.getRole() == Role.SUPPORT_ENGINEER;
+        boolean isAdmin = currentUser.getRole() == Role.ADMIN;
 
-        Specification<Ticket> spec = TicketSpecification.withFilters(filter, isEngineer, currentUser.getId());
+        Specification<Ticket> spec = TicketSpecification.withFilters(filter, isAdmin, currentUser.getId());
         return ticketRepository.findAll(spec, pageable).map(ticketMapper::toResponse);
     }
 
@@ -106,8 +107,13 @@ public class TicketService {
         }
 
         Ticket ticket = getTicketEntity(id);
+        checkTicketProjectAccess(ticket, currentUser);
         User assignee = userRepository.findById(request.assigneeId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + request.assigneeId()));
+
+        if (!projectRepository.existsByIdAndUsers_Id(ticket.getProject().getId(), assignee.getId())) {
+            throw new BadRequestException("Assignee must belong to the ticket's project");
+        }
 
         if (ticket.getAssignedTo() == null) {
             ticket.setResponseDateTime(LocalDateTime.now());
@@ -121,6 +127,8 @@ public class TicketService {
     @Transactional
     public TicketDto.TicketResponse updateStatus(Long id, TicketDto.UpdateStatusRequest request) {
         Ticket ticket = getTicketEntity(id);
+        User currentUser = getCurrentUser();
+        checkTicketProjectAccess(ticket, currentUser);
         TicketStatus newStatus = request.status();
 
         if (!ticket.getCurrentStatus().canTransitionTo(newStatus)) {
@@ -142,6 +150,8 @@ public class TicketService {
     @Transactional
     public TicketDto.TicketResponse addResolution(Long id, TicketDto.ResolutionRequest request) {
         Ticket ticket = getTicketEntity(id);
+        User currentUser = getCurrentUser();
+        checkTicketProjectAccess(ticket, currentUser);
 
         if (ticket.getCurrentStatus() == TicketStatus.CLOSED) {
             throw new BadRequestException("Cannot update resolution on a closed ticket");
@@ -168,6 +178,15 @@ public class TicketService {
     private void checkNotClosed(Ticket ticket) {
         if (ticket.getCurrentStatus() == TicketStatus.CLOSED) {
             throw new BadRequestException("Cannot modify a closed ticket");
+        }
+    }
+
+    private void checkTicketProjectAccess(Ticket ticket, User currentUser) {
+        if (currentUser.getRole() == Role.ADMIN) {
+            return;
+        }
+        if (!projectRepository.existsByIdAndUsers_Id(ticket.getProject().getId(), currentUser.getId())) {
+            throw new ForbiddenException("Access denied to ticket: " + ticket.getId());
         }
     }
 

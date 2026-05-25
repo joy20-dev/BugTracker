@@ -1,7 +1,10 @@
 package com.company.bugtracker1.ticket.repository;
 
+import com.company.bugtracker1.project.entity.Project;
 import com.company.bugtracker1.ticket.dto.TicketDto;
 import com.company.bugtracker1.ticket.entity.Ticket;
+import com.company.bugtracker1.user.entity.User;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -12,7 +15,7 @@ public class TicketSpecification {
 
     public static Specification<Ticket> withFilters(
             TicketDto.TicketFilterRequest filter,
-            boolean isEngineer,
+            boolean isAdmin,
             Long currentUserId) {
 
         return (root, query, cb) -> {
@@ -40,8 +43,10 @@ public class TicketSpecification {
             } else if (filter.toDate() != null) {
                 predicates.add(cb.lessThanOrEqualTo(root.get("createdAt"), filter.toDate()));
             }
-            if (isEngineer) {
-                predicates.add(cb.equal(root.get("assignedTo").get("id"), currentUserId));
+            if (!isAdmin) {
+                Join<Ticket, Project> projectJoin = root.join("project");
+                Join<Project, User> userJoin = projectJoin.join("users");
+                predicates.add(cb.equal(userJoin.get("id"), currentUserId));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
