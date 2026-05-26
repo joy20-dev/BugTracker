@@ -81,9 +81,8 @@ public class ProjectService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
 
-        if (project.getUsers().add(user)) {
-            user.getProjects().add(project);
-            projectRepository.save(project);
+        if (!projectRepository.existsByIdAndUsers_Id(projectId, userId)) {
+            projectRepository.addUserToProject(projectId, userId);
         }
 
         return projectMapper.toResponse(project);

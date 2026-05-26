@@ -5,22 +5,41 @@ import com.company.bugtracker1.project.repository.ProjectRepository;
 import com.company.bugtracker1.user.entity.Role;
 import com.company.bugtracker1.user.entity.User;
 import com.company.bugtracker1.user.repository.UserRepository;
-import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class DataSeeder {
 
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TransactionTemplate transactionTemplate;
 
-    @PostConstruct
+    public DataSeeder(UserRepository userRepository,
+                      ProjectRepository projectRepository,
+                      PasswordEncoder passwordEncoder,
+                      PlatformTransactionManager transactionManager) {
+        this.userRepository = userRepository;
+        this.projectRepository = projectRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.transactionTemplate = new TransactionTemplate(transactionManager);
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void onApplicationReady() {
+        transactionTemplate.execute(status -> {
+            seed();
+            return null;
+        });
+    }
+
     public void seed() {
         log.info("Running DataSeeder...");
 
@@ -74,17 +93,13 @@ public class DataSeeder {
 
         userRepository.findByEmail("manager@bugtracker.com").ifPresent(manager -> {
             projectRepository.findByProjectCode("BUG").ifPresent(project -> {
-                project.getUsers().add(manager);
-                manager.getProjects().add(project);
-                projectRepository.save(project);
+                projectRepository.addUserToProject(project.getId(), manager.getId());
             });
         });
 
         userRepository.findByEmail("engineer@bugtracker.com").ifPresent(engineer -> {
             projectRepository.findByProjectCode("BUG").ifPresent(project -> {
-                project.getUsers().add(engineer);
-                engineer.getProjects().add(project);
-                projectRepository.save(project);
+                projectRepository.addUserToProject(project.getId(), engineer.getId());
             });
         });
     }

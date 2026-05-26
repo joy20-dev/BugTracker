@@ -26,7 +26,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     public ResponseEntity<List<UserDto.UserResponse>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
