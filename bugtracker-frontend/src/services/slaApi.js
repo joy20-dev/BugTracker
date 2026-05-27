@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api/v1';
+const API_BASE_URL = 'https://laughing-spoon-wvrrwv9v4rqrhxr7-8080.app.github.dev/api/v1';
 
 const slaApi = {
   // SLA Tracking APIs
@@ -44,6 +44,11 @@ const slaApi = {
 
   updatePolicy: async (policyId, updateData) => {
     const response = await axios.put(`${API_BASE_URL}/sla/policies/${policyId}`, updateData);
+    return response.data;
+  },
+
+  deletePolicy: async (policyId) => {
+    const response = await axios.delete(`${API_BASE_URL}/sla/policies/${policyId}`);
     return response.data;
   },
 

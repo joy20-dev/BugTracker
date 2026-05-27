@@ -5,12 +5,14 @@ import { Plus, X, FolderKanban } from 'lucide-react'
 import { formatDate } from '../utils/helpers'
 import useAuthStore from '../store/authStore'
 import toast from 'react-hot-toast'
+import SLAPolicyManager from '../components/sla/SLAPolicyManager'
 
 export default function ProjectsPage() {
   const qc = useQueryClient()
   const { isManager } = useAuthStore()
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ projectCode: '', projectName: '', description: '' })
+  const [selectedProject, setSelectedProject] = useState(null)
 
   const { data: projects, isLoading } = useQuery({
     queryKey: ['projects'],
@@ -109,6 +111,14 @@ export default function ProjectsPage() {
               <p className="text-sm text-gray-500 mb-3 line-clamp-2">{project.description}</p>
             )}
             <p className="text-xs text-gray-400">Created {formatDate(project.createdAt)}</p>
+            {isManager() && (
+              <button
+                onClick={() => setSelectedProject(project)}
+                className="mt-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Manage SLA Policies
+              </button>
+            )}
           </div>
         ))}
       </div>
@@ -117,6 +127,25 @@ export default function ProjectsPage() {
         <div className="text-center py-16 text-gray-400">
           <FolderKanban size={40} className="mx-auto mb-3 opacity-40" />
           <p>No projects yet. Create one to get started.</p>
+        </div>
+      )}
+
+      {selectedProject && (
+        <div className="mt-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5">
+            <div>
+              <p className="text-xs uppercase tracking-[0.28em] text-sky-600">SLA policy management</p>
+              <h2 className="mt-2 text-2xl font-semibold text-slate-900">{selectedProject.projectName}</h2>
+              <p className="text-sm text-slate-500">Project code: {selectedProject.projectCode}</p>
+            </div>
+            <button
+              onClick={() => setSelectedProject(null)}
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Close
+            </button>
+          </div>
+          <SLAPolicyManager projectId={selectedProject.id} />
         </div>
       )}
     </div>

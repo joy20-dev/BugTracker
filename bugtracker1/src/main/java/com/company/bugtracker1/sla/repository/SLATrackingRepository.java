@@ -19,6 +19,8 @@ public interface SLATrackingRepository extends JpaRepository<SLATracking, Long> 
 
     List<SLATracking> findByStatus(SLAStatus status);
 
+    List<SLATracking> findByTicketId(Long ticketId);
+
     List<SLATracking> findByIsBreachedTrue();
 
     List<SLATracking> findByStatusAndEndTimeBeforeAndIsBreachedFalse(SLAStatus status, LocalDateTime endTime);

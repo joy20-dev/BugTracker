@@ -52,18 +52,18 @@ public class SLATrackingService {
     }
 
     @Transactional
-    public void startSLA(Ticket ticket, SLAType slaType) {
+    public boolean startSLA(Ticket ticket, SLAType slaType) {
         Optional<SLATracking> existingSLA = slaTrackingRepository.findByTicketIdAndSlaType(ticket.getId(), slaType);
 
         if (existingSLA.isPresent()) {
             log.warn("SLA already exists for ticket {} and type {}", ticket.getId(), slaType);
-            return;
+            return false;
         }
 
         SLAPolicy policy = getSLAPolicyForTicket(ticket, slaType);
         if (policy == null) {
             log.warn("No SLA policy found for ticket {} and type {}", ticket.getId(), slaType);
-            return;
+            return false;
         }
 
         LocalDateTime startTime = LocalDateTime.now();
@@ -90,6 +90,7 @@ public class SLATrackingService {
         slaTrackingRepository.save(slaTracking);
         auditLogService.logAction(ticket, "SLA_STARTED", slaType + " SLA started", "SLA_TRACKING", slaTracking.getId(), null, slaType.toString());
         log.info("SLA started for ticket {} with type: {}", ticket.getId(), slaType);
+        return true;
     }
 
     @Transactional
@@ -132,6 +133,9 @@ public class SLATrackingService {
         }
 
         LocalDateTime pausedAt = slaTracking.getPausedAt();
+        if (pausedAt == null) {
+            throw new ConflictException("Cannot resume SLA: pause timestamp missing");
+        }
         long pausedDuration = java.time.temporal.ChronoUnit.MINUTES.between(pausedAt, LocalDateTime.now());
 
         slaTracking.setStatus(SLAStatus.ACTIVE);
@@ -155,13 +159,21 @@ public class SLATrackingService {
     @Transactional(readOnly = true)
     public List<SLATrackingDto.SLATrackingResponse> getTicketSLAs(Long ticketId) {
         ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found with id: " + ticketId));
+            .orElseThrow(() -> new ResourceNotFoundException("Ticket not found with id: " + ticketId));
 
-        return slaTrackingRepository.findByTicketIdAndSlaType(ticketId, SLAType.RESPONSE)
-                .stream()
-                .map(slaTrackingMapper::toResponse)
-                .collect(Collectors.toList());
+        return slaTrackingRepository.findByTicketId(ticketId)
+            .stream()
+            .map(slaTrackingMapper::toResponse)
+            .collect(Collectors.toList());
     }
+
+        @Transactional
+        public boolean startSLA(Long ticketId, SLAType slaType) {
+            Ticket ticket = ticketRepository.findById(ticketId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Ticket not found with id: " + ticketId));
+
+            return startSLA(ticket, slaType);
+        }
 
     @Transactional
     public void updateRemainingTime() {

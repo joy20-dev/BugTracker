@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "sla_breaches", indexes = {
-        @Index(name = "idx_ticket_id", columnList = "ticket_id"),
+        @Index(name = "idx_sla_breaches_ticket_id", columnList = "ticket_id"),
         @Index(name = "idx_sla_type", columnList = "sla_type"),
         @Index(name = "idx_breach_time", columnList = "breach_timestamp")
 })

@@ -14,9 +14,10 @@ const SLACountdownTimer = ({ ticketId, slaType }) => {
       try {
         const data = await slaApi.getSLAStatus(ticketId, slaType);
         setSLAStatus(data);
-        setRemainingTime(data.remainingMinutes);
+        const mins = Number.isFinite(Number(data?.remainingMinutes)) ? Number(data.remainingMinutes) : 0;
+        setRemainingTime(mins);
       } catch (err) {
-        setError(err.message);
+        setError(err.response?.data?.message || err.message);
       } finally {
         setLoading(false);
       }
@@ -28,9 +29,12 @@ const SLACountdownTimer = ({ ticketId, slaType }) => {
   }, [ticketId, slaType]);
 
   useEffect(() => {
-    if (slaStatus?.remainingMinutes !== undefined) {
+    if (Number.isFinite(Number(slaStatus?.remainingMinutes))) {
       const timer = setInterval(() => {
-        setRemainingTime((prev) => (prev > 0 ? prev - 1 : 0));
+        setRemainingTime((prev) => {
+          if (!Number.isFinite(prev)) return 0;
+          return prev > 0 ? prev - 1 : 0;
+        });
       }, 60000);
       return () => clearInterval(timer);
     }
