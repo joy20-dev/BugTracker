@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import usersApi from '../../services/usersApi';
-import projectsApi from '../../services/projectsApi';
+import { usersApi, projectsApi } from '../../api';
 
 const ProjectUsersManager = ({ projectId, isOpen, onClose }) => {
   const [users, setUsers] = useState([]);
@@ -21,7 +20,7 @@ const ProjectUsersManager = ({ projectId, isOpen, onClose }) => {
     try {
       setLoading(true);
       setError(null);
-      const userData = await usersApi.getAllUsers();
+      const userData = await usersApi.getAll();
       setUsers(Array.isArray(userData) ? userData : []);
     } catch (err) {
       setError('Failed to load users');
@@ -33,7 +32,7 @@ const ProjectUsersManager = ({ projectId, isOpen, onClose }) => {
 
   const loadProjectUsers = async () => {
     try {
-      const projectData = await projectsApi.getProjectById(projectId);
+      const projectData = await projectsApi.getById(projectId);
       setProjectUsers(projectData.users || []);
     } catch (err) {
       console.error('Error loading project users:', err);
@@ -49,7 +48,7 @@ const ProjectUsersManager = ({ projectId, isOpen, onClose }) => {
     try {
       setLoading(true);
       setError(null);
-      await projectsApi.assignUserToProject(projectId, parseInt(selectedUserId));
+      await projectsApi.assignUser(projectId, parseInt(selectedUserId));
       setSuccess('User assigned to project successfully');
       setSelectedUserId('');
       await loadProjectUsers();

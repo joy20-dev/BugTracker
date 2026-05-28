@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle } from 'lucide-react';
-import slaApi from '../../services/slaApi';
+import { slaApi } from '../../api';
 
 const SLAMetricsDashboard = ({ projectId }) => {
   const [metrics, setMetrics] = useState(null);

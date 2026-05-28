@@ -8,7 +8,16 @@ const SLAPolicyManager = ({ projectId }) => {
   const [error, setError] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({
+    priority_level: '',
+    sla_type: '',
+    sla_minutes: '',
+    include_weekends: true,
+    include_business_hours_only: false,
+    business_hours_start: '09:00',
+    business_hours_end: '18:00',
+    is_active: true,
+  });
 
   useEffect(() => {
     fetchPolicies();
@@ -33,24 +42,38 @@ const SLAPolicyManager = ({ projectId }) => {
 
   const handleSave = async () => {
     try {
+      const payload = {
+        sla_minutes: parseInt(formData.sla_minutes, 10) || 0,
+        include_weekends: formData.include_weekends,
+        include_business_hours_only: formData.include_business_hours_only,
+        business_hours_start: formData.business_hours_start,
+        business_hours_end: formData.business_hours_end,
+        is_active: formData.is_active,
+      };
+
       if (editingId) {
-        await slaApi.updatePolicy(editingId, {
-          sla_minutes: formData.sla_minutes,
-          is_active: formData.is_active,
-        });
+        await slaApi.updatePolicy(editingId, payload);
       } else {
         await slaApi.createPolicy({
           project_id: projectId,
           priority_level: formData.priority_level,
           sla_type: formData.sla_type,
-          sla_minutes: formData.sla_minutes,
-          include_weekends: formData.include_weekends,
-          include_business_hours_only: formData.include_business_hours_only,
+          ...payload,
         });
       }
+
       setEditingId(null);
       setShowForm(false);
-      setFormData({});
+      setFormData({
+        priority_level: '',
+        sla_type: '',
+        sla_minutes: '',
+        include_weekends: true,
+        include_business_hours_only: false,
+        business_hours_start: '09:00',
+        business_hours_end: '18:00',
+        is_active: true,
+      });
       fetchPolicies();
     } catch (err) {
       setError(err.message);
@@ -78,7 +101,16 @@ const SLAPolicyManager = ({ projectId }) => {
         <button
           onClick={() => {
             setEditingId(null);
-            setFormData({});
+            setFormData({
+              priority_level: '',
+              sla_type: '',
+              sla_minutes: '',
+              include_weekends: true,
+              include_business_hours_only: false,
+              business_hours_start: '09:00',
+              business_hours_end: '18:00',
+              is_active: true,
+            });
             setShowForm(true);
           }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -90,7 +122,7 @@ const SLAPolicyManager = ({ projectId }) => {
 
       {showForm && (
         <div className="bg-gray-50 rounded-lg p-6 mb-6">
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 mb-4">
             <div>
               <label className="block text-sm font-medium mb-1">Priority Level</label>
               <select
@@ -126,19 +158,60 @@ const SLAPolicyManager = ({ projectId }) => {
               <input
                 type="number"
                 value={formData.sla_minutes || ''}
-                onChange={(e) => setFormData({ ...formData, sla_minutes: parseInt(e.target.value) })}
+                onChange={(e) => setFormData({ ...formData, sla_minutes: parseInt(e.target.value, 10) || '' })}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+              />
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={formData.include_weekends}
+                  onChange={(e) => setFormData({ ...formData, include_weekends: e.target.checked })}
+                  className="w-4 h-4"
+                />
+                <label className="text-sm font-medium">Include weekends</label>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={formData.include_business_hours_only}
+                  onChange={(e) => setFormData({ ...formData, include_business_hours_only: e.target.checked })}
+                  className="w-4 h-4"
+                />
+                <label className="text-sm font-medium">Business hours only</label>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Business hours start</label>
+              <input
+                type="time"
+                value={formData.business_hours_start}
+                onChange={(e) => setFormData({ ...formData, business_hours_start: e.target.value })}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Active</label>
+              <label className="block text-sm font-medium mb-1">Business hours end</label>
+              <input
+                type="time"
+                value={formData.business_hours_end}
+                onChange={(e) => setFormData({ ...formData, business_hours_end: e.target.value })}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
               <input
                 type="checkbox"
                 checked={formData.is_active !== false}
                 onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                 className="w-4 h-4"
               />
+              <label className="text-sm font-medium">Active</label>
             </div>
           </div>
 
@@ -172,6 +245,8 @@ const SLAPolicyManager = ({ projectId }) => {
               <th className="px-4 py-2 text-left">Priority</th>
               <th className="px-4 py-2 text-left">Type</th>
               <th className="px-4 py-2 text-left">SLA (Minutes)</th>
+              <th className="px-4 py-2 text-left">Weekends</th>
+              <th className="px-4 py-2 text-left">Hours</th>
               <th className="px-4 py-2 text-left">Active</th>
               <th className="px-4 py-2 text-left">Actions</th>
             </tr>
@@ -182,6 +257,10 @@ const SLAPolicyManager = ({ projectId }) => {
                 <td className="px-4 py-2 font-medium">{policy.priority_level}</td>
                 <td className="px-4 py-2">{policy.sla_type}</td>
                 <td className="px-4 py-2">{policy.sla_minutes}</td>
+                <td className="px-4 py-2">{policy.include_weekends ? 'Yes' : 'No'}</td>
+                <td className="px-4 py-2">
+                  {policy.include_business_hours_only ? `${policy.business_hours_start} → ${policy.business_hours_end}` : 'Anytime'}
+                </td>
                 <td className="px-4 py-2">
                   <span className={`px-2 py-1 rounded text-xs font-medium ${
                     policy.is_active 

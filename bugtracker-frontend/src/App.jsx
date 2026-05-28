@@ -9,6 +9,7 @@ import TicketDetailPage from './pages/TicketDetailPage'
 import CreateTicketPage from './pages/CreateTicketPage'
 import ProjectsPage from './pages/ProjectsPage'
 import UsersPage from './pages/UsersPage'
+import ConfigurationPage from './pages/ConfigurationPage'
 
 function PrivateRoute({ children }) {
   const { token } = useAuthStore()
@@ -41,12 +42,17 @@ export default function App() {
       <Route path="/tickets/:id" element={
         <PrivateRoute><Layout><TicketDetailPage /></Layout></PrivateRoute>
       } />
-      <Route path="/projects" element={
+      <Route path="/configuration" element={
+        <PrivateRoute><Layout><ConfigurationPage /></Layout></PrivateRoute>
+      } />
+      <Route path="/configuration/projects" element={
         <PrivateRoute><Layout><ProjectsPage /></Layout></PrivateRoute>
       } />
-      <Route path="/users" element={
+      <Route path="/configuration/users" element={
         <AdminRoute><Layout><UsersPage /></Layout></AdminRoute>
       } />
+      <Route path="/projects" element={<Navigate to="/configuration/projects" replace />} />
+      <Route path="/users" element={<Navigate to="/configuration/users" replace />} />
     </Routes>
   )
 }

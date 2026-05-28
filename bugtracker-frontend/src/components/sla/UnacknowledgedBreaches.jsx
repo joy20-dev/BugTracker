@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, CheckCircle, MessageSquare } from 'lucide-react';
-import slaApi from '../../services/slaApi';
+import { slaApi } from '../../api';
 
 const BreachAcknowledgmentModal = ({ breach, onClose, onAcknowledge }) => {
   const [notes, setNotes] = useState('');

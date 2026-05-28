@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, CheckCircle } from 'lucide-react';
-import slaApi from '../../services/slaApi';
+import { slaApi } from '../../api';
 
 const SLABreachBadge = ({ ticketId }) => {
   const [breaches, setBreaches] = useState([]);

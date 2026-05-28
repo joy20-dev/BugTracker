@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, AlertCircle, CheckCircle, PauseCircle, AlertTriangle } from 'lucide-react';
 import useSLAStore from '../../store/slaStore';
-import slaApi from '../../services/slaApi';
+import { slaApi } from '../../api';
 
 const SLACountdownTimer = ({ ticketId, slaType }) => {
   const [slaStatus, setSLAStatus] = useState(null);
