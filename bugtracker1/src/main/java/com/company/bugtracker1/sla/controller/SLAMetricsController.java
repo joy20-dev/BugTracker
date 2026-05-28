@@ -23,4 +23,10 @@ public class SLAMetricsController {
         SLATrackingDto.SLAMetrics metrics = slaMetricsService.getMetricsForProject(projectId);
         return ResponseEntity.ok(metrics);
     }
+
+    @GetMapping("/aggregate")
+    public ResponseEntity<SLATrackingDto.SLAMetrics> getAggregateMetrics() {
+        SLATrackingDto.SLAMetrics metrics = slaMetricsService.getAggregateMetrics();
+        return ResponseEntity.ok(metrics);
+    }
 }

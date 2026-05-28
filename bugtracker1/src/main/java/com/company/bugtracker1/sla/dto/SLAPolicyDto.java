@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Builder.Default;
 
 import java.time.LocalDateTime;
 
@@ -71,15 +72,19 @@ public class SLAPolicyDto {
         private Integer slaMinutes;
 
         @JsonProperty("include_weekends")
+        @Default
         private Boolean includeWeekends = true;
 
         @JsonProperty("include_business_hours_only")
+        @Default
         private Boolean includeBusinessHoursOnly = false;
 
         @JsonProperty("business_hours_start")
+        @Default
         private String businessHoursStart = "09:00";
 
         @JsonProperty("business_hours_end")
+        @Default
         private String businessHoursEnd = "18:00";
     }
 

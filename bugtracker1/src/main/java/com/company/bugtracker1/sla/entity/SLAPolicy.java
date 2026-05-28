@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.Builder.Default;
 
 import java.time.LocalDateTime;
 
@@ -40,18 +41,23 @@ public class SLAPolicy {
     private Integer slaMinutes;
 
     @Column(name = "include_weekends", nullable = false)
+    @Default
     private Boolean includeWeekends = true;
 
     @Column(name = "include_business_hours_only", nullable = false)
+    @Default
     private Boolean includeBusinessHoursOnly = false;
 
     @Column(name = "business_hours_start", length = 5)
+    @Default
     private String businessHoursStart = "09:00";
 
     @Column(name = "business_hours_end", length = 5)
+    @Default
     private String businessHoursEnd = "18:00";
 
     @Column(name = "is_active", nullable = false)
+    @Default
     private Boolean isActive = true;
 
     @Column(name = "created_at", nullable = false, updatable = false)

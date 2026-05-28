@@ -36,7 +36,10 @@ public class SLATrackingController {
 
     @PostMapping("/start")
     public ResponseEntity<Void> startSLA(@RequestBody SLATrackingDto.StartSLARequest request) {
-        slaTrackingService.pauseSLA(request.getTicketId(), request.getSlaType(), "Manual start");
+        boolean started = slaTrackingService.startSLA(request.getTicketId(), request.getSlaType());
+        if (!started) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

@@ -3,6 +3,7 @@ package com.company.bugtracker1.sla.controller;
 import com.company.bugtracker1.sla.dto.SLABreachDto;
 import com.company.bugtracker1.sla.service.SLABreachService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -39,8 +40,8 @@ public class SLABreachController {
 
     @GetMapping("/date-range")
     public ResponseEntity<List<SLABreachDto.SLABreachResponse>> getBreachesByDateRange(
-            @RequestParam LocalDateTime startTime,
-            @RequestParam LocalDateTime endTime) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime) {
         List<SLABreachDto.SLABreachResponse> responses = slaBreachService.getBreachesByDateRange(startTime, endTime);
         return ResponseEntity.ok(responses);
     }

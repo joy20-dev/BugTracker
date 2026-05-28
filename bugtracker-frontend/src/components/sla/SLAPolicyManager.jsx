@@ -60,7 +60,7 @@ const SLAPolicyManager = ({ projectId }) => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this policy?')) {
       try {
-        // Add delete method to API
+        await slaApi.deletePolicy(id);
         fetchPolicies();
       } catch (err) {
         setError(err.message);

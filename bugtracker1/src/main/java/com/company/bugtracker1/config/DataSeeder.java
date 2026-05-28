@@ -2,6 +2,10 @@ package com.company.bugtracker1.config;
 
 import com.company.bugtracker1.project.entity.Project;
 import com.company.bugtracker1.project.repository.ProjectRepository;
+import com.company.bugtracker1.sla.entity.PriorityLevel;
+import com.company.bugtracker1.sla.entity.SLAPolicy;
+import com.company.bugtracker1.sla.entity.SLAType;
+import com.company.bugtracker1.sla.repository.SLAPolicyRepository;
 import com.company.bugtracker1.user.entity.Role;
 import com.company.bugtracker1.user.entity.User;
 import com.company.bugtracker1.user.repository.UserRepository;
@@ -19,15 +23,18 @@ public class DataSeeder {
 
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
+    private final SLAPolicyRepository slaPolicyRepository;
     private final PasswordEncoder passwordEncoder;
     private final TransactionTemplate transactionTemplate;
 
     public DataSeeder(UserRepository userRepository,
                       ProjectRepository projectRepository,
+                      SLAPolicyRepository slaPolicyRepository,
                       PasswordEncoder passwordEncoder,
                       PlatformTransactionManager transactionManager) {
         this.userRepository = userRepository;
         this.projectRepository = projectRepository;
+        this.slaPolicyRepository = slaPolicyRepository;
         this.passwordEncoder = passwordEncoder;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
     }
@@ -102,5 +109,51 @@ public class DataSeeder {
                 projectRepository.addUserToProject(project.getId(), engineer.getId());
             });
         });
+
+        // Create SLA policies for BUG project
+        projectRepository.findByProjectCode("BUG").ifPresent(project -> {
+            createSLAPoliciesForProject(project);
+        });
+
+        // Create SLA policies for WEB project
+        projectRepository.findByProjectCode("WEB").ifPresent(project -> {
+            createSLAPoliciesForProject(project);
+        });
+    }
+
+    private void createSLAPoliciesForProject(Project project) {
+        for (PriorityLevel priority : PriorityLevel.values()) {
+            // RESPONSE SLA
+            if (!slaPolicyRepository.findByProjectIdAndPriorityLevelAndSlaType(project.getId(), priority, SLAType.RESPONSE).isPresent()) {
+                slaPolicyRepository.save(SLAPolicy.builder()
+                        .project(project)
+                        .priorityLevel(priority)
+                        .slaType(SLAType.RESPONSE)
+                        .slaMinutes(priority.getResponseSlaMinutes())
+                        .includeWeekends(true)
+                        .includeBusinessHoursOnly(false)
+                        .businessHoursStart("09:00")
+                        .businessHoursEnd("18:00")
+                        .isActive(true)
+                        .build());
+                log.info("Created RESPONSE SLA policy for project: {}, priority: {}", project.getProjectCode(), priority);
+            }
+
+            // RESOLUTION SLA
+            if (!slaPolicyRepository.findByProjectIdAndPriorityLevelAndSlaType(project.getId(), priority, SLAType.RESOLUTION).isPresent()) {
+                slaPolicyRepository.save(SLAPolicy.builder()
+                        .project(project)
+                        .priorityLevel(priority)
+                        .slaType(SLAType.RESOLUTION)
+                        .slaMinutes(priority.getResolutionSlaMinutes())
+                        .includeWeekends(true)
+                        .includeBusinessHoursOnly(false)
+                        .businessHoursStart("09:00")
+                        .businessHoursEnd("18:00")
+                        .isActive(true)
+                        .build());
+                log.info("Created RESOLUTION SLA policy for project: {}, priority: {}", project.getProjectCode(), priority);
+            }
+        }
     }
 }

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { AlertTriangle } from 'lucide-react';
 import slaApi from '../../services/slaApi';
 
@@ -16,10 +15,15 @@ const SLAMetricsDashboard = ({ projectId }) => {
 
   const fetchMetrics = async () => {
     try {
-      const data = await slaApi.getProjectMetrics(projectId);
+      // Use aggregate metrics if no projectId, otherwise use project-specific metrics
+      const data = projectId 
+        ? await slaApi.getProjectMetrics(projectId)
+        : await slaApi.getAggregateMetrics();
       setMetrics(data);
+      setError(null);
     } catch (err) {
-      setError(err.message);
+      console.error('Error fetching SLA metrics:', err);
+      setError(err.message || 'Failed to load metrics');
     } finally {
       setLoading(false);
     }
@@ -72,15 +76,22 @@ const SLAMetricsDashboard = ({ projectId }) => {
       <div className="grid grid-cols-2 gap-6 mb-6">
         <div className="bg-gray-50 rounded-lg p-4">
           <h3 className="font-semibold mb-4">SLA Distribution</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={breachChartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="value" fill="#3b82f6" />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="space-y-4">
+            {breachChartData.map((item) => (
+              <div key={item.name}>
+                <div className="mb-2 flex items-center justify-between text-sm text-slate-700">
+                  <span>{item.name}</span>
+                  <span>{item.value ?? 0}</span>
+                </div>
+                <div className="h-3 rounded-full bg-slate-200">
+                  <div
+                    className="h-3 rounded-full bg-sky-600"
+                    style={{ width: `${Math.min(100, Math.round(((item.value ?? 0) / Math.max(1, metrics.totalSLAs ?? 1)) * 100))}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="bg-gray-50 rounded-lg p-4">
@@ -89,24 +100,24 @@ const SLAMetricsDashboard = ({ projectId }) => {
             <div>
               <div className="flex justify-between mb-1">
                 <span className="text-sm font-medium">Breach Rate</span>
-                <span className="text-sm font-bold">{metrics.breachPercentage.toFixed(2)}%</span>
+                <span className="text-sm font-bold">{(metrics.breachPercentage ?? 0).toFixed(2)}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
                   className="bg-red-600 h-2 rounded-full"
-                  style={{ width: `${Math.min(metrics.breachPercentage, 100)}%` }}
+                  style={{ width: `${Math.min(metrics.breachPercentage ?? 0, 100)}%` }}
                 ></div>
               </div>
             </div>
 
             <div className="bg-white rounded p-3">
               <p className="text-sm text-gray-600">Average Response Time</p>
-              <p className="text-2xl font-bold">{metrics.averageResponseTime} min</p>
+              <p className="text-2xl font-bold">{metrics.averageResponseTime ?? 0} min</p>
             </div>
 
             <div className="bg-white rounded p-3">
               <p className="text-sm text-gray-600">Average Resolution Time</p>
-              <p className="text-2xl font-bold">{metrics.averageResolutionTime} min</p>
+              <p className="text-2xl font-bold">{metrics.averageResolutionTime ?? 0} min</p>
             </div>
           </div>
         </div>
