@@ -15,10 +15,15 @@ const SLAMetricsDashboard = ({ projectId }) => {
 
   const fetchMetrics = async () => {
     try {
-      const data = await slaApi.getProjectMetrics(projectId);
+      // Use aggregate metrics if no projectId, otherwise use project-specific metrics
+      const data = projectId 
+        ? await slaApi.getProjectMetrics(projectId)
+        : await slaApi.getAggregateMetrics();
       setMetrics(data);
+      setError(null);
     } catch (err) {
-      setError(err.message);
+      console.error('Error fetching SLA metrics:', err);
+      setError(err.message || 'Failed to load metrics');
     } finally {
       setLoading(false);
     }

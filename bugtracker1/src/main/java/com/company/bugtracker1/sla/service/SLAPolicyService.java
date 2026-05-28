@@ -47,10 +47,10 @@ public class SLAPolicyService {
                 .priorityLevel(request.getPriorityLevel())
                 .slaType(request.getSlaType())
                 .slaMinutes(request.getSlaMinutes())
-                .includeWeekends(request.getIncludeWeekends())
-                .includeBusinessHoursOnly(request.getIncludeBusinessHoursOnly())
-                .businessHoursStart(request.getBusinessHoursStart())
-                .businessHoursEnd(request.getBusinessHoursEnd())
+                .includeWeekends(request.getIncludeWeekends() != null ? request.getIncludeWeekends() : true)
+                .includeBusinessHoursOnly(request.getIncludeBusinessHoursOnly() != null ? request.getIncludeBusinessHoursOnly() : false)
+                .businessHoursStart(request.getBusinessHoursStart() != null ? request.getBusinessHoursStart() : "09:00")
+                .businessHoursEnd(request.getBusinessHoursEnd() != null ? request.getBusinessHoursEnd() : "18:00")
                 .isActive(true)
                 .build();
 

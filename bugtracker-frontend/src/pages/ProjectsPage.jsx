@@ -6,6 +6,7 @@ import { formatDate } from '../utils/helpers'
 import useAuthStore from '../store/authStore'
 import toast from 'react-hot-toast'
 import SLAPolicyManager from '../components/sla/SLAPolicyManager'
+import ProjectUsersManager from '../components/project/ProjectUsersManager'
 
 export default function ProjectsPage() {
   const qc = useQueryClient()
@@ -13,6 +14,7 @@ export default function ProjectsPage() {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ projectCode: '', projectName: '', description: '' })
   const [selectedProject, setSelectedProject] = useState(null)
+  const [showUsersManager, setShowUsersManager] = useState(false)
 
   const { data: projects, isLoading } = useQuery({
     queryKey: ['projects'],
@@ -112,12 +114,23 @@ export default function ProjectsPage() {
             )}
             <p className="text-xs text-gray-400">Created {formatDate(project.createdAt)}</p>
             {isManager() && (
-              <button
-                onClick={() => setSelectedProject(project)}
-                className="mt-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-              >
-                Manage SLA Policies
-              </button>
+              <div className="flex flex-col gap-2 mt-4">
+                <button
+                  onClick={() => setSelectedProject(project)}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Manage SLA Policies
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedProject(project);
+                    setShowUsersManager(true);
+                  }}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Manage Users
+                </button>
+              </div>
             )}
           </div>
         ))}
@@ -130,7 +143,7 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      {selectedProject && (
+      {selectedProject && !showUsersManager && (
         <div className="mt-8">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5">
             <div>
@@ -147,6 +160,17 @@ export default function ProjectsPage() {
           </div>
           <SLAPolicyManager projectId={selectedProject.id} />
         </div>
+      )}
+
+      {showUsersManager && selectedProject && (
+        <ProjectUsersManager
+          projectId={selectedProject.id}
+          isOpen={showUsersManager}
+          onClose={() => {
+            setShowUsersManager(false);
+            setSelectedProject(null);
+          }}
+        />
       )}
     </div>
   )
