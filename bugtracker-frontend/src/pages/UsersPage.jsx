@@ -56,7 +56,7 @@ export default function UsersPage() {
       {showForm && (
         <div className="card p-5 mb-6">
           <h2 className="font-semibold text-gray-900 mb-4">Create User</h2>
-          <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name *</label>
               <input required value={form.name}

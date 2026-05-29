@@ -49,14 +49,13 @@ export default function DashboardPage() {
   const recent = ticketData?.content ?? []
 
   const recentByStatus = useMemo(() => {
-    return STATUS_BOARD.reduce((acc, status) => ({ ...acc, [status]: [] }), {})
-  }, [])
-
-  recent.forEach(ticket => {
-    if (recentByStatus[ticket.currentStatus]) {
-      recentByStatus[ticket.currentStatus].push(ticket)
-    }
-  })
+    return recent.reduce((acc, ticket) => {
+      if (STATUS_BOARD.includes(ticket.currentStatus)) {
+        acc[ticket.currentStatus].push(ticket)
+      }
+      return acc
+    }, STATUS_BOARD.reduce((acc, status) => ({ ...acc, [status]: [] }), {}))
+  }, [recent])
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -81,7 +80,7 @@ export default function DashboardPage() {
       </div>
 
       {/* SLA Metrics Dashboard */}
-      <SLAMetricsDashboard mb="mb-8" />
+      <SLAMetricsDashboard className="mb-8" />
 
       <div className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-6 shadow-sm mb-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
@@ -112,7 +111,7 @@ export default function DashboardPage() {
                         to={`/tickets/${ticket.id}`}
                         className="block rounded-3xl border border-slate-200 bg-slate-50 p-4 transition hover:border-slate-300 hover:bg-white"
                       >
-                        <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-start justify-between gap-3">
                           <span className="font-mono text-xs text-slate-500">{ticket.ticketId}</span>
                           <span className={statusConfig[ticket.currentStatus]?.className}>{statusConfig[ticket.currentStatus]?.label}</span>
                         </div>

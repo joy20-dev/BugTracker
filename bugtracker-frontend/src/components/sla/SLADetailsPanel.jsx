@@ -54,7 +54,7 @@ const SLADetailsPanel = ({ ticketId }) => {
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid gap-4 text-sm sm:grid-cols-2">
                 <div>
                   <p className="text-gray-600">Start Time</p>
                   <p className="font-mono">{new Date(sla.startTime).toLocaleString()}</p>

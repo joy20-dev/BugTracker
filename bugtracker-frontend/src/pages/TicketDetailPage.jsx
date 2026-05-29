@@ -81,21 +81,7 @@ export default function TicketDetailPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-5">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <span className="font-mono text-blue-600 font-bold text-lg">{ticket.ticketId}</span>
-            <span className={statusConfig[ticket.currentStatus]?.className}>{statusConfig[ticket.currentStatus]?.label}</span>
-            <span className={priorityConfig[ticket.priority]?.className}>{priorityConfig[ticket.priority]?.label}</span>
-            <span className={supportLevelConfig[ticket.supportLevel]?.className}>{ticket.supportLevel}</span>
-          </div>
-          <p className="text-gray-500 text-sm">
-            {ticket.project?.projectName} ({ticket.project?.projectCode}) &bull; Created {formatDate(ticket.createdAt)}
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-5">
+      <div className="grid gap-5 xl:grid-cols-3">
         <div className="col-span-2 space-y-4">
           <div className="card p-5">
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Issue Description</h3>
@@ -138,6 +124,8 @@ export default function TicketDetailPage() {
               </button>
             </div>
           )}
+
+          <SLADetailsPanel ticketId={id} />
         </div>
 
         <div className="space-y-4">
@@ -167,18 +155,6 @@ export default function TicketDetailPage() {
               </div>
             )}
           </div>
-
-          {/* SLA Section */}
-          <div className="card p-4">
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Service Level Agreements</h3>
-            <div className="space-y-3">
-              <SLACountdownTimer ticketId={id} slaType="RESPONSE" />
-              <SLACountdownTimer ticketId={id} slaType="RESOLUTION" />
-              <SLABreachBadge ticketId={id} />
-            </div>
-          </div>
-
-          <SLADetailsPanel ticketId={id} />
 
           {nextStatuses.length > 0 && (
             <div className="card p-4">
@@ -220,6 +196,34 @@ export default function TicketDetailPage() {
               </button>
             </div>
           )}
+          
+          <div className="space-y-4">
+            <div className="card p-4">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">SLA Agreements</h3>
+              <div className="space-y-3">
+                <div className="rounded-lg border border-slate-200 bg-white p-3">
+                  <p className="text-xs font-semibold text-gray-500 mb-1">Response SLA</p>
+                  <div className="text-sm text-gray-700">
+                    <SLACountdownTimer ticketId={id} slaType="RESPONSE" />
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-slate-200 bg-white p-3">
+                  <p className="text-xs font-semibold text-gray-500 mb-1">Resolution SLA</p>
+                  <div className="text-sm text-gray-700">
+                    <SLACountdownTimer ticketId={id} slaType="RESOLUTION" />
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-slate-200 bg-white p-3">
+                  <p className="text-xs font-semibold text-gray-500 mb-1">Breaches</p>
+                  <div className="text-sm text-gray-700">
+                    <SLABreachBadge ticketId={id} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

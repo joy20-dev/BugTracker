@@ -3,6 +3,7 @@ package com.company.bugtracker1.sla.service;
 import com.company.bugtracker1.project.repository.ProjectRepository;
 import com.company.bugtracker1.sla.dto.SLATrackingDto;
 import com.company.bugtracker1.sla.entity.SLATracking;
+import com.company.bugtracker1.sla.entity.SLAStatus;
 import com.company.bugtracker1.sla.repository.SLABreachRepository;
 import com.company.bugtracker1.sla.repository.SLATrackingRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,8 @@ public class SLAMetricsService {
 
         Integer totalSLAs = slaTrackingRepository.countTotalSLAsByProjectId(projectId);
         Integer breachedSLAs = slaTrackingRepository.countBreachedSLAsByProjectId(projectId);
+        Integer activeSLAs = slaTrackingRepository.findByProjectIdAndStatus(projectId, SLAStatus.ACTIVE).size();
+        Integer completedSLAs = slaTrackingRepository.findByProjectIdAndStatus(projectId, SLAStatus.COMPLETED).size();
 
         Double breachPercentage = totalSLAs > 0 
                 ? (breachedSLAs.doubleValue() / totalSLAs.doubleValue()) * 100 
@@ -39,6 +42,8 @@ public class SLAMetricsService {
 
         return SLATrackingDto.SLAMetrics.builder()
                 .totalSLAs(totalSLAs)
+                .activeSLAs(activeSLAs)
+                .completedSLAs(completedSLAs)
                 .breachedSLAs(breachedSLAs)
                 .breachPercentage(breachPercentage)
                 .build();
@@ -47,6 +52,8 @@ public class SLAMetricsService {
     private SLATrackingDto.SLAMetrics calculateMetrics(List<SLATracking> slaTrackings) {
         int total = slaTrackings.size();
         int breached = (int) slaTrackings.stream().filter(SLATracking::getIsBreached).count();
+        int active = (int) slaTrackings.stream().filter(sla -> sla.getStatus() == SLAStatus.ACTIVE).count();
+        int completed = (int) slaTrackings.stream().filter(sla -> sla.getStatus() == SLAStatus.COMPLETED).count();
         
         Double breachPercentage = total > 0 
                 ? (breached * 100.0) / total 
@@ -54,6 +61,8 @@ public class SLAMetricsService {
 
         return SLATrackingDto.SLAMetrics.builder()
                 .totalSLAs(total)
+                .activeSLAs(active)
+                .completedSLAs(completed)
                 .breachedSLAs(breached)
                 .breachPercentage(breachPercentage)
                 .build();

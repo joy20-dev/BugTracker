@@ -95,7 +95,7 @@ export default function TicketsPage() {
         <div className="min-w-[1200px] grid gap-4 md:grid-cols-5">
           {STATUSES.map(status => (
             <div key={status} className="rounded-[1.5rem] bg-white border border-slate-200 p-4 shadow-sm">
-              <div className="mb-4 flex items-center justify-between gap-3">
+              <div className="mb-4 flex items-start justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-slate-900">{statusConfig[status]?.label}</p>
                   <p className="mt-1 text-xs text-slate-500">{groupedTickets[status]?.length ?? 0} issues</p>
@@ -108,9 +108,9 @@ export default function TicketsPage() {
                     <Link
                       key={ticket.id}
                       to={`/tickets/${ticket.id}`}
-                      className="block rounded-3xl border border-slate-200 bg-slate-50 p-4 transition hover:border-slate-300 hover:bg-white"
+                      className="block rounded-3xl border border-slate-200 bg-slate-50 p-4 transition hover:border-slate-300 hover:bg-white min-w-0"
                     >
-                      <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-start justify-between gap-2">
                         <span className="font-mono text-xs text-slate-500">{ticket.ticketId}</span>
                         <span className={priorityConfig[ticket.priority]?.className}>{priorityConfig[ticket.priority]?.label}</span>
                       </div>
@@ -120,8 +120,8 @@ export default function TicketsPage() {
                         <span className="badge bg-slate-100 text-slate-700">{ticket.project?.projectCode ?? 'No project'}</span>
                       </div>
                       <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
-                        <span>{ticket.assignedTo?.name ?? 'Unassigned'}</span>
-                        <span>{formatDate(ticket.createdAt)}</span>
+                        <span className="truncate">{ticket.assignedTo?.name ?? <span className="italic text-slate-400">Unassigned</span>}</span>
+                        <span className="whitespace-nowrap text-right">{formatDate(ticket.createdAt)}</span>
                       </div>
                     </Link>
                   ))
